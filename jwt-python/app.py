@@ -6,12 +6,11 @@ app = Flask(__name__)
 
 SECRET_KEY = "my_super_secret_key"
 
-# fake user for learning
 fake_user = {
     "id": "1",
     "email": "george@example.com",
     "password": "123456",
-    "role": "admin"
+    "role": "admin",
 }
 
 
@@ -38,9 +37,9 @@ def login():
 
     payload = {
         "sub": fake_user["id"],
+        "id": fake_user["id"],
         "email": fake_user["email"],
         "role": fake_user["role"],
-        "id": fake_user["id"],
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
         "iat": datetime.datetime.utcnow(),
     }
@@ -67,7 +66,6 @@ def protected():
             return jsonify({"message": "Invalid authorization format"}), 401
 
         token = parts[1]
-
         decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
 
         return jsonify({
@@ -81,6 +79,36 @@ def protected():
             "error": str(e)
         }), 401
 
+@app.route("/admin")
+def admin():
+    auth_header = request.headers.get("Authorization")
+
+    if not auth_header:
+        return jsonify({"message": "No token provided"}), 401
+
+    try:
+        parts = auth_header.split(" ")
+
+        if len(parts) != 2 or parts[0] != "Bearer":
+            return jsonify({"message": "Invalid authorization format"}), 401
+
+        token = parts[1]
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+
+        # 🔥 ROLE CHECK
+        if decoded.get("role") != "admin":
+            return jsonify({"message": "Access denied: Admins only"}), 403
+
+        return jsonify({
+            "message": "Welcome Admin",
+            "user": decoded
+        })
+
+    except Exception as e:
+        return jsonify({
+            "message": "Invalid token",
+            "error": str(e)
+        }), 401
 
 if __name__ == "__main__":
     app.run(debug=True)
