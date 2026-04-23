@@ -5,7 +5,9 @@ from app.utils.jwt_helper import verify_token
 
 def token_required(f):
     @wraps(f)
-    def decorated(*args, **kwargs):
+    def decorated(*args, **kwargs): # Call the original function, pass the decoded user first, and forward any other arguments unchanged.”
+         #  /**kwargs means any extra named arguments
+        # /*args Means: “any extra positional arguments
         auth_header = request.headers.get("Authorization")
 
         if not auth_header:
@@ -28,3 +30,7 @@ def token_required(f):
             }), 401
 
     return decorated
+
+#The decorator extracts the token from the request header, verifies it using the
+#  secret key, and if valid, passes the decoded user data to the route. If not valid, it blocks the request.
+#f is the original route function
