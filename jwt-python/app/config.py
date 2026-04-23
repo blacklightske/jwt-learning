@@ -1,0 +1,2 @@
+class Config:
+    SECRET_KEY = "my_super_secret_key"
