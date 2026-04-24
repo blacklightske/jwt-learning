@@ -1,13 +1,14 @@
 import pymysql
+from flask import current_app
 
 
 def get_db_connection():
     connection = pymysql.connect(
-        host="localhost",
-        user="root",
-        password="root",
-        port=8889,
-        database="jwt_learning",
+        host=current_app.config["DB_HOST"],
+        user=current_app.config["DB_USER"],
+        password=current_app.config["DB_PASSWORD"],
+        port=current_app.config["DB_PORT"],
+        database=current_app.config["DB_NAME"],
         cursorclass=pymysql.cursors.DictCursor
     )
     return connection

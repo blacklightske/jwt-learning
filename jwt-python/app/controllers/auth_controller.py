@@ -15,16 +15,16 @@ def login():
     if not email or not password:
         return jsonify({"message": "Email and password are required"}), 400
 
-    token = login_user(email, password, current_app.config["SECRET_KEY"])
+    tokens = login_user(email, password, current_app.config["SECRET_KEY"])
 
-    if not token:
+    if not tokens:
         return jsonify({"message": "Invalid credentials"}), 401
 
     return jsonify({
-        "message": "Login successful",
-        "token": token
-    }), 200
-
+    "message": "Login successful",
+    "access_token": tokens["access_token"],
+    "refresh_token": tokens["refresh_token"]
+}), 200
 def register():
     data = request.get_json()
 

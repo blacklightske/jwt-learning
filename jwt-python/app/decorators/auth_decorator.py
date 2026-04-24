@@ -22,12 +22,21 @@ def token_required(f):
 
         try:
             decoded = verify_token(token, current_app.config["SECRET_KEY"])
+
+            if decoded.get("type") != "access":
+                return jsonify({
+            "message": "Invalid token type: access token required"
+        }), 401
+
             return f(decoded, *args, **kwargs)
+
         except Exception as e:
             return jsonify({
-                "message": "Invalid token",
-                "error": str(e)
-            }), 401
+        "message": "Invalid token",
+        "error": str(e)
+    }), 401
+
+           
 
     return decorated
 

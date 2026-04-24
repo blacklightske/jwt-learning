@@ -1,5 +1,5 @@
 from app.db import get_db_connection
-from app.utils.jwt_helper import generate_token
+from app.utils.jwt_helper import generate_access_token, generate_refresh_token
 from app.utils.password_helper import check_password
 from app.utils.password_helper import hash_password
 
@@ -26,9 +26,13 @@ def login_user(email, password, secret_key):
     if not check_password(password, user["password"]):
         return None
 
-    token = generate_token(user, secret_key)
-    return token
+    access_token = generate_access_token(user, secret_key)
+    refresh_token = generate_refresh_token(user, secret_key)
 
+    return {
+    "access_token": access_token,
+    "refresh_token": refresh_token
+}
 def register_user(email, password, role="user"):
     existing_user = find_user_by_email(email)
 
