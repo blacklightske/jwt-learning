@@ -31,6 +31,22 @@ def token_required(f):
 
     return decorated
 
+def roles_required(*roles):
+    def wrapper(f):
+        @wraps(f)
+        def decorated(decoded, *args, **kwargs):
+            user_role = decoded.get("role")
+
+            if user_role not in roles:
+                return jsonify({
+                    "message": "Access denied: insufficient permissions"
+                }), 403
+
+            return f(decoded, *args, **kwargs)
+
+        return decorated
+    return wrapper
+
 #The decorator extracts the token from the request header, verifies it using the
 #  secret key, and if valid, passes the decoded user data to the route. If not valid, it blocks the request.
 #f is the original route function

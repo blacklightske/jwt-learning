@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
-from app.controllers.auth_controller import login
-from app.decorators.auth_decorator import token_required
+from app.decorators.auth_decorator import token_required, roles_required
+from app.controllers.auth_controller import login, register
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -8,6 +8,10 @@ auth_bp = Blueprint("auth", __name__)
 @auth_bp.route("/login", methods=["POST"])
 def login_route():
     return login()
+
+@auth_bp.route("/register", methods=["POST"])
+def register_route():
+    return register()
 
 
 @auth_bp.route("/protected", methods=["GET"])
@@ -18,13 +22,10 @@ def protected_route(decoded):
         "user": decoded
     }), 200
 
-
 @auth_bp.route("/admin", methods=["GET"])
 @token_required
+@roles_required("admin")
 def admin_route(decoded):
-    if decoded.get("role") != "admin":
-        return jsonify({"message": "Access denied: Admins only"}), 403
-
     return jsonify({
         "message": "Welcome Admin",
         "user": decoded

@@ -1,17 +1,56 @@
+from app.db import get_db_connection
 from app.utils.jwt_helper import generate_token
+from app.utils.password_helper import check_password
+from app.utils.password_helper import hash_password
 
 
-fake_user = {
-    "id": "1",
-    "email": "george@example.com",
-    "password": "123456",
-    "role": "admin"
-}
+def find_user_by_email(email):
+    connection = get_db_connection()
+
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM users WHERE email = %s"
+            cursor.execute(sql, (email,))
+            user = cursor.fetchone()
+            return user
+    finally:
+        connection.close()
 
 
 def login_user(email, password, secret_key):
-    if email != fake_user["email"] or password != fake_user["password"]:
+    user = find_user_by_email(email)
+
+    if not user:
         return None
 
-    token = generate_token(fake_user, secret_key)
+    if not check_password(password, user["password"]):
+        return None
+
+    token = generate_token(user, secret_key)
     return token
+
+def register_user(email, password, role="user"):
+    existing_user = find_user_by_email(email)
+
+    if existing_user:
+        return None
+
+    hashed_password = hash_password(password)
+
+    connection = get_db_connection()
+
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+                INSERT INTO users (email, password, role)
+                VALUES (%s, %s, %s)
+            """
+            cursor.execute(sql, (email, hashed_password, role))
+            connection.commit()
+
+            return {
+                "email": email,
+                "role": role
+            }
+    finally:
+        connection.close()

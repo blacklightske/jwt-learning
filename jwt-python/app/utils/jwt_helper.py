@@ -4,7 +4,7 @@ import datetime
 
 def generate_token(user, secret_key):
     payload = {
-        "sub": user["id"],
+        "sub": str(user["id"]),
         "email": user["email"],
         "role": user["role"],
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
